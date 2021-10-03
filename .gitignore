@@ -1,0 +1,28 @@
+.import
+*.import
+
+*.ini
+
+*.dll
+*.so
+
+*.obj
+*.mtl
+
+#Optional Resources
+*.mesh
+*.material
+*.anim
+*.png
+*.wav
+*.ttf
+
+*.translation
+
+#GDNative compiled sources
+gdnative/bin
+gdnative/x86
+gdnative/x64
+
+#SCons
+*.dblite

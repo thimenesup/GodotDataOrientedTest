@@ -1,0 +1,79 @@
+[gd_scene load_steps=14 format=2]
+
+[ext_resource path="res://debug_ui.gd" type="Script" id=1]
+[ext_resource path="res://projectile_manager.gdns" type="Script" id=2]
+[ext_resource path="res://checkerboard_texture.png" type="Texture" id=3]
+[ext_resource path="res://character.tscn" type="PackedScene" id=4]
+[ext_resource path="res://character_camera.gd" type="Script" id=5]
+
+[sub_resource type="SpatialMaterial" id=1]
+flags_unshaded = true
+params_billboard_mode = 1
+albedo_color = Color( 0.92549, 0.580392, 0.0901961, 1 )
+uv1_scale = Vector3( -1, 1, 1 )
+
+[sub_resource type="QuadMesh" id=2]
+material = SubResource( 1 )
+
+[sub_resource type="MultiMesh" id=3]
+transform_format = 1
+mesh = SubResource( 2 )
+
+[sub_resource type="SpatialMaterial" id=4]
+albedo_color = Color( 0.933333, 0.0705882, 0.0705882, 1 )
+
+[sub_resource type="CylinderMesh" id=5]
+material = SubResource( 4 )
+height = 4.0
+radial_segments = 16
+rings = 1
+
+[sub_resource type="MultiMesh" id=6]
+transform_format = 1
+mesh = SubResource( 5 )
+
+[sub_resource type="SpatialMaterial" id=7]
+albedo_texture = ExtResource( 3 )
+uv1_scale = Vector3( 64, 64, 1 )
+
+[sub_resource type="PlaneMesh" id=8]
+material = SubResource( 7 )
+size = Vector2( 256, 256 )
+
+[node name="Test" type="WorldEnvironment"]
+
+[node name="DebugUI" type="Label" parent="."]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 264.0
+margin_bottom = 264.0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "Debug Info"
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ProjectileManager" type="Node" parent="."]
+script = ExtResource( 2 )
+projectile_multimesh = SubResource( 3 )
+enemy_multimesh = SubResource( 6 )
+
+[node name="Projectiles" type="MultiMeshInstance" parent="."]
+multimesh = SubResource( 3 )
+
+[node name="Enemies" type="MultiMeshInstance" parent="."]
+multimesh = SubResource( 6 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.34202, 0.939693, 0, -0.939693, 0.34202, 0, 20, 5 )
+far = 1000.0
+script = ExtResource( 5 )
+_target_path = NodePath("../Character")
+
+[node name="Floor" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0 )
+mesh = SubResource( 8 )
+material/0 = null
+
+[node name="Character" parent="." instance=ExtResource( 4 )]
