@@ -16,6 +16,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	_projectile_manager.projectile_speed = 25.0
+	_projectile_manager.projectile_lifetime = 3.0
 
 func _process(delta: float) -> void:
 	var mouse = get_viewport().get_mouse_position()
@@ -37,7 +38,7 @@ func _process(delta: float) -> void:
 	
 	if Input.is_mouse_button_pressed(BUTTON_LEFT):
 		if _time >= _firing_time:
-			#_projectile_manager.create_projectiles(100, transform)
+			#_projectile_manager.create_projectiles(1000, transform)
 			_projectile_manager.create_projectiles_shot(_bullet_spread, transform)
 			_time = 0.0
 	

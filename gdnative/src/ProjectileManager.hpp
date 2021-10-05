@@ -4,16 +4,16 @@
 #include <Node.hpp>
 #include <MultiMesh.hpp>
 
-#include <vector>
+#include "EntityArchetype.hpp"
 
 namespace godot {
 
-struct Projectile {
-	Transform transform;
+struct LifeTime {
+	float value;
 };
 
-struct Enemy {
-	Transform transform;
+struct Health {
+	int32_t value;
 };
 
 class ProjectileManager : public Node {
@@ -28,6 +28,7 @@ public:
 	Ref<MultiMesh> enemyMultiMesh;
 
 	float projectileSpeed;
+	float projectileLifeTime;
 
 	static void _register_methods();
 
@@ -43,7 +44,7 @@ public:
 
 	void create_enemies(uint32_t count, const Transform& transform);
 	void destroy_enemy(uint32_t id); //WARNING: Input must be valid
-	void destroy_enemies(uint32_t begin, uint32_t end);
+	void destroy_enemies(uint32_t begin, uint32_t end); //WARNING: Input must be valid
 	inline uint32_t get_enemy_count() const;
 
 	inline static void write_transform(float* transformWrite, const Transform& transform, int32_t o);
@@ -51,11 +52,11 @@ public:
 
 private:
 
-	std::vector<Projectile> projectiles;
+	EntityArchetype<Transform, LifeTime> projectiles;
 
 	PoolRealArray projectileTransformData;
 
-	std::vector<Enemy> enemies;
+	EntityArchetype<Transform, Health> enemies;
 
 	PoolRealArray enemyTransformData;
 

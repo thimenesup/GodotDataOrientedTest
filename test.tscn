@@ -55,7 +55,11 @@ __meta__ = {
 }
 
 [node name="ProjectileManager" type="Node" parent="."]
+process_priority = 1000
 script = ExtResource( 2 )
+__meta__ = {
+"_editor_description_": "Make sure it calls _process() last!"
+}
 projectile_multimesh = SubResource( 3 )
 enemy_multimesh = SubResource( 6 )
 
@@ -77,3 +81,5 @@ mesh = SubResource( 8 )
 material/0 = null
 
 [node name="Character" parent="." instance=ExtResource( 4 )]
+_bullet_spread = 20
+_firing_time = 0.0
