@@ -8,16 +8,16 @@
 
 [sub_resource type="SpatialMaterial" id=1]
 flags_unshaded = true
-params_billboard_mode = 1
 albedo_color = Color( 0.92549, 0.580392, 0.0901961, 1 )
 uv1_scale = Vector3( -1, 1, 1 )
 
-[sub_resource type="QuadMesh" id=2]
+[sub_resource type="PlaneMesh" id=9]
 material = SubResource( 1 )
+size = Vector2( 0.1, 1 )
 
 [sub_resource type="MultiMesh" id=3]
 transform_format = 1
-mesh = SubResource( 2 )
+mesh = SubResource( 9 )
 
 [sub_resource type="SpatialMaterial" id=4]
 albedo_color = Color( 0.933333, 0.0705882, 0.0705882, 1 )
@@ -81,5 +81,4 @@ mesh = SubResource( 8 )
 material/0 = null
 
 [node name="Character" parent="." instance=ExtResource( 4 )]
-_bullet_spread = 20
 _firing_time = 0.0

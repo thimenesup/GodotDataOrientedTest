@@ -41,6 +41,27 @@ public:
 		}, components);
 	}
 
+	template <typename F>
+	void remove_batch_if(const F&& checkFunction) { //Fast multiple element O(n) removal, while preserving insertion order
+
+		std::apply([&](auto& ...vector) {
+
+		int32_t last = 0;
+
+		for (int32_t i = 0; i < size(); ++i) {
+			bool remove = checkFunction(i);
+			if (remove)
+				continue;
+
+			(..., (vector[last] = vector[i]));
+			last++;
+		}
+
+		(..., (vector.resize(last)));
+
+		}, components);
+	}
+
 	void erase(size_t index) {
 
 		std::apply([&](auto& ...vector) { 

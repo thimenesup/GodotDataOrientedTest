@@ -34,19 +34,17 @@ void ProjectileManager::_init() {
 
 void ProjectileManager::_process(float delta) { //Make sure it executes after everything else! Or there will be some displayed mesh instances with uninitialized ("glitched") mesh transforms for a single frame
 
-	for (int32_t i = 0; i < projectiles.size(); ++i) {
+	projectiles.remove_batch_if([this](int32_t i) {
 		const LifeTime& lifeTime = projectiles.get_component<LifeTime>(i);
-		if (lifeTime.value <= 0.0) {
-			destroy_projectile(i);
-		}
-	}
+		return lifeTime.value <= 0.0;
+	});
+	projectileMultiMesh->set_visible_instance_count(projectiles.size());
 
-	for (int32_t i = 0; i < enemies.size(); ++i) {
+	enemies.remove_batch_if([this](int32_t i) {
 		const Health& health = enemies.get_component<Health>(i);
-		if (health.value <= 0) {
-			destroy_enemy(i);
-		}
-	}
+		return health.value <= 0;
+	});
+	enemyMultiMesh->set_visible_instance_count(enemies.size());
 
 	const Vector3 motion = Vector3(0.0, 0.0, -1.0) * projectileSpeed * delta;
 
@@ -145,16 +143,16 @@ void ProjectileManager::create_projectiles(uint32_t count, const Transform& tran
 
 void ProjectileManager::destroy_projectile(uint32_t id) {
 
-	projectileMultiMesh->set_visible_instance_count(projectiles.size() - 1);
+	projectiles.erase(id);
 
-	projectiles.remove_swap(id); //projectiles.erase(id);
+	projectileMultiMesh->set_visible_instance_count(projectiles.size());
 }
 
 void ProjectileManager::destroy_projectiles(uint32_t begin, uint32_t end) {
 
-	projectileMultiMesh->set_visible_instance_count(projectiles.size() - (end - begin));
-
 	projectiles.erase(begin, end);
+
+	projectileMultiMesh->set_visible_instance_count(projectiles.size());
 }
 
 uint32_t ProjectileManager::get_projectile_count() const {
@@ -186,16 +184,16 @@ void ProjectileManager::create_enemies(uint32_t count, const Transform& transfor
 
 void ProjectileManager::destroy_enemy(uint32_t id) {
 
-	enemyMultiMesh->set_visible_instance_count(enemies.size() - 1);
-
 	enemies.erase(id);
+
+	enemyMultiMesh->set_visible_instance_count(enemies.size());
 }
 
 void ProjectileManager::destroy_enemies(uint32_t begin, uint32_t end) {
 
-	enemyMultiMesh->set_visible_instance_count(enemies.size() - (end - begin));
-
 	enemies.erase(begin, end);
+
+	enemyMultiMesh->set_visible_instance_count(enemies.size());
 }
 
 uint32_t ProjectileManager::get_enemy_count() const {

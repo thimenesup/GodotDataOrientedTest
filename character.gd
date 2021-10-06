@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 	
 	if Input.is_mouse_button_pressed(BUTTON_RIGHT):
 		var begin = 0
-		var end = 100
+		var end = min(100, _projectile_manager.get_projectile_count())
 		if end <= _projectile_manager.get_projectile_count():
 			_projectile_manager.destroy_projectiles(begin, end)
 	
