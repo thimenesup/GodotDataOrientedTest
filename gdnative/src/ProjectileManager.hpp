@@ -36,7 +36,7 @@ public:
 
 	void _process(float delta);
 
-	void create_projectiles_shot(uint32_t projectileSpread, const Transform& transform);
+	void create_projectiles_spreadshot(uint32_t projectileSpread, const Transform& transform, float angle);
 	void create_projectiles(uint32_t count, const Transform& transform);
 	void destroy_projectile(uint32_t id); //WARNING: Input must be valid
 	void destroy_projectiles(uint32_t begin, uint32_t end); //WARNING: Input must be valid

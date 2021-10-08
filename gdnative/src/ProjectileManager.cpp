@@ -15,7 +15,7 @@ void ProjectileManager::_register_methods() {
 	
 	register_method("_process", &ProjectileManager::_process);
 
-	register_method("create_projectiles_shot", &ProjectileManager::create_projectiles_shot);
+	register_method("create_projectiles_spreadshot", &ProjectileManager::create_projectiles_spreadshot);
 	register_method("create_projectiles", &ProjectileManager::create_projectiles);
 	register_method("destroy_projectile", &ProjectileManager::destroy_projectile);
 	register_method("destroy_projectiles", &ProjectileManager::destroy_projectiles);
@@ -52,7 +52,7 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 	for (int32_t i = 0; i < projectiles.size(); ++i) {
 		Transform& projectileTransform = projectiles.get_component<Transform>(i);
 		projectileTransform = projectileTransform.translated(motion);
-		write_transform(projectileTransformData.write().ptr(), projectileTransform, i);
+		write_transform(projectileTransformData.write().ptr(), projectileTransform, i); //GODOT BOTTLENECK: Paying an innecessary copy because we must use a GodotArray to be able to interface with the engine
 
 		LifeTime& lifeTime = projectiles.get_component<LifeTime>(i);
 		lifeTime.value -= delta;
@@ -74,38 +74,35 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 	}
 
 	if (projectiles.size() > 0)
-		projectileMultiMesh->set_as_bulk_array(projectileTransformData);
+		projectileMultiMesh->set_as_bulk_array(projectileTransformData); //GODOT BOTTLENECK: This will do a copy of the data, and also recalculate the AABB, we dont need that https://github.com/godotengine/godot/blob/3.2/drivers/gles3/rasterizer_storage_gles3.cpp#L5035
 
 	if (enemies.size() > 0)
 		enemyMultiMesh->set_as_bulk_array(enemyTransformData);
 }
 
 
-void ProjectileManager::create_projectiles_shot(uint32_t projectileSpread, const Transform& transform) {
+void ProjectileManager::create_projectiles_spreadshot(uint32_t projectileSpread, const Transform& transform, float angle) {
 
-	const int32_t max = projectileSpread / 2;
-	const int32_t min = -max;
-	const int32_t totalAmount = projectileSpread * projectileSpread;
+	const float deg2rad = 3.14159265358979323846 / 180;
+	const float centerAlignment = (angle / 2) * deg2rad;
 
-	Vector3 rotation = transform.basis.get_euler();
-
+	const uint32_t totalAmount = projectileSpread * projectileSpread;
 	size_t index = projectiles.size();
-	
+
 	projectiles.resize(projectiles.size() + totalAmount);
 	if (projectiles.capacity() > projectileMultiMesh->get_instance_count()) { //Avoid re/allocations as much as possible by reserving capacity
 		projectileMultiMesh->set_instance_count(projectiles.capacity());
 		projectileTransformData.resize(projectiles.capacity() * FloatsInTransform);
 	}
 
-	for (int32_t x = min; x < max; ++x) {
-
-		rotation.z = fmod((rotation.z + 3 * x), 360); //TODO FIX: Rotation axis are wrong
-
-		for (int32_t y = min; y < max; ++y) {
-			rotation.y = fmod((rotation.y + 3 * y), 360);
+	for (size_t x = 0; x < projectileSpread; ++x) {
+		for (size_t y = 0; y < projectileSpread; ++y) {
+			const float xAngle = (x * (angle / projectileSpread)) * deg2rad;
+			const float yAngle = (y * (angle / projectileSpread)) * deg2rad;
 
 			Transform spreadTransform = transform;
-			spreadTransform.basis = Basis(rotation);
+			spreadTransform.basis = spreadTransform.basis.rotated(Vector3(0, 1, 0), xAngle - centerAlignment);
+			spreadTransform.basis = spreadTransform.basis.rotated(Vector3(1, 0, 0), yAngle - centerAlignment);
 
 			Transform& projectileTransform = projectiles.get_component<Transform>(index);
 			projectileTransform = spreadTransform;
@@ -119,6 +116,7 @@ void ProjectileManager::create_projectiles_shot(uint32_t projectileSpread, const
 
 	projectileMultiMesh->set_visible_instance_count(projectiles.size());
 }
+
 
 void ProjectileManager::create_projectiles(uint32_t count, const Transform& transform) {
 
