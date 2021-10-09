@@ -48,11 +48,13 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 
 	const Vector3 motion = Vector3(0.0, 0.0, -1.0) * projectileSpeed * delta;
 
+	float* projectileTransformDataPtr = projectileTransformData.write().ptr();
+
 	#pragma omp parallel for 
 	for (int32_t i = 0; i < projectiles.size(); ++i) {
 		Transform& projectileTransform = projectiles.get_component<Transform>(i);
 		projectileTransform = projectileTransform.translated(motion);
-		write_transform(projectileTransformData.write().ptr(), projectileTransform, i); //GODOT BOTTLENECK: Paying an innecessary copy because we must use a GodotArray to be able to interface with the engine
+		write_transform(projectileTransformDataPtr, projectileTransform, i); //GODOT BOTTLENECK: Paying an innecessary copy because we must use a GodotArray to be able to interface with the engine
 
 		LifeTime& lifeTime = projectiles.get_component<LifeTime>(i);
 		lifeTime.value -= delta;
@@ -67,10 +69,12 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 		}
 	}
 
+	float* enemyTransformDataPtr = enemyTransformData.write().ptr();
+
 	#pragma omp parallel for
 	for (int32_t i = 0; i < enemies.size(); ++i) {
 		const Transform& transform = enemies.get_component<Transform>(i);
-		write_transform(enemyTransformData.write().ptr(), transform, i);
+		write_transform(enemyTransformDataPtr, transform, i);
 	}
 
 	if (projectiles.size() > 0)
