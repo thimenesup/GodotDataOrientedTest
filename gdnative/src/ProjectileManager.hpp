@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Godot.hpp>
-#include <Node.hpp>
+#include <Spatial.hpp>
 #include <MultiMesh.hpp>
 
 #include "EntityArchetype.hpp"
@@ -27,8 +27,12 @@ public:
 	Ref<MultiMesh> projectileMultiMesh;
 	Ref<MultiMesh> enemyMultiMesh;
 
+	Spatial* enemyTarget;
+
 	float projectileSpeed;
 	float projectileLifeTime;
+	int32_t enemyHealth;
+	float enemySpeed;
 
 	static void _register_methods();
 

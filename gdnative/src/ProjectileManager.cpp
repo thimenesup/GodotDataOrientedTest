@@ -10,6 +10,9 @@ void ProjectileManager::_register_methods() {
 	register_property<ProjectileManager, float>("projectile_speed", &ProjectileManager::projectileSpeed, 10.0);
 	register_property<ProjectileManager, float>("projectile_lifetime", &ProjectileManager::projectileLifeTime, 1.0);
 	register_property<ProjectileManager, Ref<MultiMesh>>("enemy_multimesh", &ProjectileManager::enemyMultiMesh, nullptr);
+	register_property<ProjectileManager, int32_t>("enemy_health", &ProjectileManager::enemyHealth, 1);
+	register_property<ProjectileManager, float>("enemy_speed", &ProjectileManager::enemySpeed, 1.0);
+	register_property<ProjectileManager, Spatial*>("enemy_target", &ProjectileManager::enemyTarget, nullptr);
 
 	register_method("_init", &ProjectileManager::_init);
 	
@@ -46,14 +49,14 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 	});
 	enemyMultiMesh->set_visible_instance_count(enemies.size());
 
-	const Vector3 motion = Vector3(0.0, 0.0, -1.0) * projectileSpeed * delta;
+	const Vector3 projectileMotion = Vector3(0.0, 0.0, -1.0) * projectileSpeed * delta;
 
 	float* projectileTransformDataPtr = projectileTransformData.write().ptr();
 
 	#pragma omp parallel for 
 	for (int32_t i = 0; i < projectiles.size(); ++i) {
 		Transform& projectileTransform = projectiles.get_component<Transform>(i);
-		projectileTransform = projectileTransform.translated(motion);
+		projectileTransform = projectileTransform.translated(projectileMotion);
 		write_transform(projectileTransformDataPtr, projectileTransform, i); //GODOT BOTTLENECK: Paying an innecessary copy because we must use a GodotArray to be able to interface with the engine
 
 		LifeTime& lifeTime = projectiles.get_component<LifeTime>(i);
@@ -69,13 +72,22 @@ void ProjectileManager::_process(float delta) { //Make sure it executes after ev
 		}
 	}
 
-	float* enemyTransformDataPtr = enemyTransformData.write().ptr();
+	
+	if (enemyTarget) {
+		const Vector3 enemyTargetPosition = enemyTarget->get_transform().origin;
+		const Vector3 motion = Vector3(0.0, 0.0, -1.0) * enemySpeed * delta;
 
-	#pragma omp parallel for
-	for (int32_t i = 0; i < enemies.size(); ++i) {
-		const Transform& transform = enemies.get_component<Transform>(i);
-		write_transform(enemyTransformDataPtr, transform, i);
+		float* enemyTransformDataPtr = enemyTransformData.write().ptr();
+
+		#pragma omp parallel for
+		for (int32_t i = 0; i < enemies.size(); ++i) {
+			Transform& transform = enemies.get_component<Transform>(i);
+			transform = transform.looking_at(enemyTargetPosition, Vector3(0.0, 1.0, 0.0));
+			transform = transform.translated(motion);
+			write_transform(enemyTransformDataPtr, transform, i);
+		}
 	}
+	
 
 	if (projectiles.size() > 0)
 		projectileMultiMesh->set_as_bulk_array(projectileTransformData); //GODOT BOTTLENECK: This will do a copy of the data, and also recalculate the AABB, we dont need that https://github.com/godotengine/godot/blob/3.2/drivers/gles3/rasterizer_storage_gles3.cpp#L5035

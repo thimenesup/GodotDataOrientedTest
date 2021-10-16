@@ -21,6 +21,10 @@ func _init() -> void:
 func _ready() -> void:
 	_projectile_manager.projectile_speed = 25.0
 	_projectile_manager.projectile_lifetime = 3.0
+	
+	_projectile_manager.enemy_health = 10
+	_projectile_manager.enemy_speed = 1.0
+	_projectile_manager.enemy_target = self
 
 func _process(delta: float) -> void:
 	var mouse = get_viewport().get_mouse_position()
