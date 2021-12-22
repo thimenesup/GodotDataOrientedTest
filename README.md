@@ -1,3 +1,5 @@
+[<img src="https://img.youtube.com/vi/I904IqwbCXk/maxresdefault.jpg">](https://youtu.be/I904IqwbCXk)
+
 # Info
 
 This project uses Data oriented/ECS programming to find how much performance you can squeeze out with these paradigms while using Godot.
